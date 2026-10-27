@@ -1,0 +1,20 @@
+node_modules/
+.next/
+dist/
+out/
+coverage/
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+.DS_Store
+
+# Expo / React Native
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+apps/mobile/node_modules/
+apps/mobile/google-services.json
+apps/mobile/GoogleService-Info.plist
+*.jks
+*.keystore
