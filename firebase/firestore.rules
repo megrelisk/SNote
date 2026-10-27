@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Every user's workspace lives under users/{uid}/{drives|folders|notes|blocks}/{id}.
+// Only the signed-in owner can read or write it.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{collection}/{docId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && collection in ['drives', 'folders', 'notes', 'blocks']
+        && request.resource.data.keys().hasAll(['createdAt', 'updatedAt'])
+        && request.resource.size() < 900 * 1024;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
