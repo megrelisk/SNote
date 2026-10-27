@@ -1,0 +1,20 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'app.snote'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.snotewidgets"
+  defaultConfig {
+    versionCode 1
+    versionName '1.0.0'
+  }
+}
+
+dependencies {
+  // HeadlessJsTaskService: syncs Quick Capture notes without opening the app UI.
+  implementation 'com.facebook.react:react-android'
+}
