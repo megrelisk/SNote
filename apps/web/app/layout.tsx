@@ -5,7 +5,6 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'SNote',
   description: 'Smart block-based notes with offline-first sync.',
-  icons: { icon: '/icon.svg' },
 };
 
 export const viewport: Viewport = {
