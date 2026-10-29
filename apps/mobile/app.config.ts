@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,7 +19,7 @@ export const APP_GROUP = `group.${BUNDLE_ID}`;
 
 const ANDROID_SERVICES = process.env.GOOGLE_SERVICES_JSON || './google-services.json';
 const IOS_SERVICES = process.env.GOOGLE_SERVICES_PLIST || './GoogleService-Info.plist';
-const exists = (file: string) => fs.existsSync(path.resolve(__dirname, file));
+const exists = (file: string) => fs.existsSync(path.resolve(process.cwd(), file));
 
 /**
  * The Google Sign-In "web client id" Firebase needs for ID tokens. Taken from
@@ -28,7 +29,7 @@ function googleWebClientId(): string {
   if (process.env.GOOGLE_WEB_CLIENT_ID) return process.env.GOOGLE_WEB_CLIENT_ID;
   if (!exists(ANDROID_SERVICES)) return '';
   try {
-    const json = JSON.parse(fs.readFileSync(path.resolve(__dirname, ANDROID_SERVICES), 'utf8'));
+    const json = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), ANDROID_SERVICES), 'utf8'));
     for (const client of json.client ?? []) {
       const web = (client.oauth_client ?? []).find((c: { client_type: number }) => c.client_type === 3);
       if (web?.client_id) return web.client_id as string;
