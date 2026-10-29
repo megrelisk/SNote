@@ -76,7 +76,12 @@ npm run dev:web        # http://localhost:3000
 npm run build:web
 ```
 
-**Live demo (GitHub Pages):** https://megrelisk.github.io/SNote/ — built and published to the `gh-pages` branch by `.github/workflows/pages.yml` on every push. One-time setup: *Settings → Pages → Source: Deploy from a branch → `gh-pages` / (root)*. To enable Google sign-in there, add the `NEXT_PUBLIC_FIREBASE_*` values as repository secrets and add `megrelisk.github.io` to Firebase's authorized domains.
+**Live site:** https://snote.sosokartozia.com. On every push, `.github/workflows/pages.yml` builds the site and publishes it to the `gh-pages` branch, which GitHub Pages serves under the custom domain.
+
+One-time setup:
+* GitHub: *Settings → Pages → Source: Deploy from a branch → `gh-pages` / (root)*.
+* DNS: a `CNAME` record with host `snote` pointing to `megrelisk.github.io`.
+* Google sign-in: add the `NEXT_PUBLIC_FIREBASE_*` values as repository secrets, and add `snote.sosokartozia.com` to Firebase's authorized domains.
 
 Without Firebase keys, the web app offers **“Continue without an account”**, a local-only mode stored in the browser. It's handy for trying the editor.
 

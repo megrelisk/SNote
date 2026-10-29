@@ -1,7 +1,9 @@
 name: Deploy web app to GitHub Pages
 
-# Builds apps/web as a static site and publishes it to the gh-pages branch.
-# One-time setup: Settings → Pages → Source: "Deploy from a branch" → gh-pages / (root).
+# Builds apps/web as a static site and publishes it to the gh-pages branch, served at
+# https://snote.sosokartozia.com (custom domain via the CNAME file written below).
+# One-time setup: Settings → Pages → Source: "Deploy from a branch" → gh-pages / (root),
+# and a DNS record: CNAME  snote  →  megrelisk.github.io
 # Optional: add NEXT_PUBLIC_FIREBASE_* repository secrets to enable Google sign-in + cloud
 # sync; without them the site runs in local-only mode ("Continue without an account").
 
@@ -12,6 +14,10 @@ on:
 
 permissions:
   contents: write
+
+env:
+  # Custom domain for the site. Clear it to serve from https://<owner>.github.io/<repo>/ instead.
+  PAGES_DOMAIN: snote.sosokartozia.com
 
 concurrency:
   group: pages
@@ -35,7 +41,8 @@ jobs:
       - name: Build static site
         run: npm run build:pages -w @snote/web
         env:
-          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+          # The custom domain serves the site from its root; github.io serves it under /<repo>.
+          NEXT_PUBLIC_BASE_PATH: ${{ env.PAGES_DOMAIN == '' && format('/{0}', github.event.repository.name) || '' }}
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
@@ -50,3 +57,4 @@ jobs:
           publish_dir: apps/web/out
           publish_branch: gh-pages
           force_orphan: true
+          cname: ${{ env.PAGES_DOMAIN }}
