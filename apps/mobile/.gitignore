@@ -40,7 +40,9 @@ yarn-error.*
 /ios
 /android
 
-# secrets / Firebase config
+# secrets
 .env
-google-services.json
-GoogleService-Info.plist
+
+# Signing keys never go in git (CI reads them from secrets)
+keystore/
+*.p12

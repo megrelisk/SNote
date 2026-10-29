@@ -1,4 +1,6 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+import fs from 'node:fs';
+import path from 'node:path';
 
 /**
  * SNote mobile configuration.
@@ -14,12 +16,35 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 const BUNDLE_ID = process.env.SNOTE_BUNDLE_ID ?? 'app.snote.mobile';
 export const APP_GROUP = `group.${BUNDLE_ID}`;
 
+const ANDROID_SERVICES = process.env.GOOGLE_SERVICES_JSON || './google-services.json';
+const IOS_SERVICES = process.env.GOOGLE_SERVICES_PLIST || './GoogleService-Info.plist';
+const exists = (file: string) => fs.existsSync(path.resolve(__dirname, file));
+
+/**
+ * The Google Sign-In "web client id" Firebase needs for ID tokens. Taken from
+ * GOOGLE_WEB_CLIENT_ID, else read from google-services.json (OAuth client of type 3).
+ */
+function googleWebClientId(): string {
+  if (process.env.GOOGLE_WEB_CLIENT_ID) return process.env.GOOGLE_WEB_CLIENT_ID;
+  if (!exists(ANDROID_SERVICES)) return '';
+  try {
+    const json = JSON.parse(fs.readFileSync(path.resolve(__dirname, ANDROID_SERVICES), 'utf8'));
+    for (const client of json.client ?? []) {
+      const web = (client.oauth_client ?? []).find((c: { client_type: number }) => c.client_type === 3);
+      if (web?.client_id) return web.client_id as string;
+    }
+  } catch {
+    // Malformed file: sign-in will report a missing client id.
+  }
+  return '';
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'SNote',
   slug: 'snote',
   scheme: 'snote',
-  version: '1.0.0',
+  version: process.env.APP_VERSION ?? '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
@@ -27,7 +52,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: BUNDLE_ID,
     appleTeamId: process.env.APPLE_TEAM_ID,
     supportsTablet: true,
-    googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? './GoogleService-Info.plist',
+    googleServicesFile: exists(IOS_SERVICES) ? IOS_SERVICES : undefined,
     entitlements: {
       'com.apple.security.application-groups': [APP_GROUP],
     },
@@ -40,7 +65,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: BUNDLE_ID,
-    googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
+    // Increases with every CI build so installed APKs update in place.
+    versionCode: Number(process.env.ANDROID_VERSION_CODE ?? 1),
+    googleServicesFile: exists(ANDROID_SERVICES) ? ANDROID_SERVICES : undefined,
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/android-icon-foreground.png',
@@ -83,7 +110,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     appGroup: APP_GROUP,
     // OAuth client of type "Web application" from the Firebase project (needed for the Google ID token).
-    googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID ?? '',
+    googleWebClientId: googleWebClientId(),
   },
   experiments: { typedRoutes: false },
 });

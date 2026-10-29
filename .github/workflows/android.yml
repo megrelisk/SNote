@@ -1,0 +1,112 @@
+name: Build Android app
+
+# Builds a signed SNote APK and publishes it as the latest GitHub Release, so it can be
+# downloaded from https://github.com/<owner>/<repo>/releases/latest/download/snote.apk
+# (linked with a QR code on the website).
+#
+# Requirements:
+#   - apps/mobile/google-services.json (Firebase → Project settings → Android app)
+#   - repository secrets ANDROID_KEYSTORE_BASE64 (base64 of the PKCS12 signing key, alias "snote")
+#     and ANDROID_KEYSTORE_PASSWORD. Keep the same key forever so updates install over old versions.
+
+on:
+  push:
+    branches: [main, claude/smart-block-notes-app-gncm08]
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/core/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Firebase config and signing secrets
+        id: ready
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          missing=""
+          [ -f google-services.json ] || missing="$missing apps/mobile/google-services.json"
+          [ -n "$KEYSTORE_BASE64" ] || missing="$missing secret:ANDROID_KEYSTORE_BASE64"
+          [ -n "$KEYSTORE_PASSWORD" ] || missing="$missing secret:ANDROID_KEYSTORE_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::warning::Skipping Android build, missing:$missing"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.ready.outputs.ok == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        if: steps.ready.outputs.ok == 'true'
+        with:
+          distribution: zulu
+          java-version: 17
+
+      - name: Install dependencies
+        if: steps.ready.outputs.ok == 'true'
+        run: npm ci
+
+      - name: Generate native project
+        if: steps.ready.outputs.ok == 'true'
+        env:
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+          APP_VERSION: 1.0.${{ github.run_number }}
+        run: npx expo prebuild --platform android --no-install --clean
+
+      - name: Build release APK
+        if: steps.ready.outputs.ok == 'true'
+        working-directory: apps/mobile/android
+        env:
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+          APP_VERSION: 1.0.${{ github.run_number }}
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+
+      - name: Sign APK
+        if: steps.ready.outputs.ok == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/snote-release.p12"
+          BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BUILD_TOOLS/apksigner" sign \
+            --ks "$RUNNER_TEMP/snote-release.p12" --ks-type PKCS12 --ks-key-alias snote \
+            --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD \
+            --out snote.apk android/app/build/outputs/apk/release/app-release.apk
+          "$BUILD_TOOLS/apksigner" verify --print-certs snote.apk | head -3
+
+      - name: Publish release
+        if: steps.ready.outputs.ok == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v1.0.${{ github.run_number }}
+          name: SNote Android 1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: apps/mobile/snote.apk
+          body: |
+            Install on Android: open this page on your phone, download **snote.apk** and allow
+            "Install unknown apps" for your browser when asked. Newer versions install over older ones.

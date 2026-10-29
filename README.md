@@ -97,6 +97,16 @@ npx expo run:android           # or: npx expo run:ios
 # or in the cloud: npx eas-cli build --profile development
 ```
 
+### Android APK (no app store)
+
+`.github/workflows/android.yml` builds a signed APK on every push that touches the mobile app. It publishes the APK as the latest GitHub Release, and the website links to it with a button and a QR code: `https://github.com/megrelisk/SNote/releases/latest/download/snote.apk`.
+
+The build needs:
+* `apps/mobile/google-services.json`. Firebase client config isn't secret, so it is committed.
+* The repository secrets `ANDROID_KEYSTORE_BASE64` and `ANDROID_KEYSTORE_PASSWORD`, holding the release signing key (alias `snote`). Never commit the key. Every version must be signed with the same key, or updates won't install over the previous version.
+
+Register the key's SHA-1 in Firebase so Google Sign-In works.
+
 ### 4. Checks
 
 ```bash

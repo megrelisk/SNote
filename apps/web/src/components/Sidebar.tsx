@@ -4,6 +4,7 @@ import type { Drive, Folder, Note } from '@snote/core';
 import { useState } from 'react';
 import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { AppDownloadButton } from './AppDownload';
 import { Icon } from './Icon';
 
 export type Selection =
@@ -204,6 +205,7 @@ export function Sidebar({
       </div>
 
       <div className="sidebar-footer">
+        <AppDownloadButton />
         <div className={`sync-pill${!status.online ? ' offline' : status.pendingWrites ? ' pending' : ''}`} title={status.error ?? syncLabel}>
           <Icon name={!status.online ? 'cloudOff' : status.pendingWrites ? 'sync' : 'cloud'} size={14} />
           <span>{syncLabel}</span>

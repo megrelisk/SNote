@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from '@/lib/session';
+import { AppDownload } from './AppDownload';
 
 export function SignIn() {
   const { cloudAvailable, signInWithGoogle, continueLocally, error } = useSession();
@@ -31,6 +32,7 @@ export function SignIn() {
         </button>
         <p className="hint small">Without an account, notes stay in this browser only.</p>
         {error && <p className="error-text">{error}</p>}
+        <AppDownload />
       </div>
     </div>
   );
