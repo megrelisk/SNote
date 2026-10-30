@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="snote_widget_bg">#FF202020</color>
+  <color name="snote_widget_card">#FF2A2A2A</color>
+  <color name="snote_widget_text">#DEFFFFFF</color>
+  <color name="snote_widget_text_soft">#99FFFFFF</color>
+  <color name="snote_widget_accent">#FF5B8DEF</color>
+  <color name="snote_widget_chip">#2E5B8DEF</color>
+
+  <style name="SNoteCaptureDialog" parent="@android:style/Theme.DeviceDefault.Dialog.NoActionBar">
+    <item name="android:windowMinWidthMajor">90%</item>
+    <item name="android:windowMinWidthMinor">94%</item>
+    <item name="android:colorAccent">@color/snote_widget_accent</item>
+  </style>
+</resources>

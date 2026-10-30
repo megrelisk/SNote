@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="snote_quick_capture_label">SNote Quick Note</string>
+  <string name="snote_quick_capture_description">Write a note straight from the home screen into any Drive and Folder.</string>
+  <string name="snote_carousel_label">SNote Notes</string>
+  <string name="snote_carousel_description">Swipe through recent, pinned, Drive or Folder notes and open one with a tap.</string>
+
+  <color name="snote_widget_bg">#FFFFFFFF</color>
+  <color name="snote_widget_card">#FFF7F7F5</color>
+  <color name="snote_widget_text">#FF37352F</color>
+  <color name="snote_widget_text_soft">#A637352F</color>
+  <color name="snote_widget_accent">#FF2F6FEB</color>
+  <color name="snote_widget_chip">#1F2F6FEB</color>
+
+  <style name="SNoteCaptureDialog" parent="@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar">
+    <item name="android:windowMinWidthMajor">90%</item>
+    <item name="android:windowMinWidthMinor">94%</item>
+    <item name="android:colorAccent">@color/snote_widget_accent</item>
+  </style>
+</resources>

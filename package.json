@@ -1,0 +1,19 @@
+{
+  "name": "snote",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Smart block-based notes: offline-first, real-time synced, with interactive home screen widgets.",
+  "workspaces": [
+    "packages/*",
+    "apps/web"
+  ],
+  "scripts": {
+    "build:core": "npm run build -w @snote/core",
+    "test": "npm test -w @snote/core",
+    "typecheck": "npm run typecheck -w @snote/core && npm run typecheck -w @snote/web",
+    "dev:web": "npm run dev -w @snote/web",
+    "build:web": "npm run build -w @snote/web",
+    "typecheck:mobile": "npm run typecheck --prefix apps/mobile",
+    "dev:mobile": "npm start --prefix apps/mobile"
+  }
+}

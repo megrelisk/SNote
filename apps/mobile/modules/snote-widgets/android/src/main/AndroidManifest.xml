@@ -1,0 +1,61 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+  <application>
+    <!-- Quick Capture: type a note from the home screen, pick Drive & Folder. -->
+    <receiver
+      android:name=".QuickCaptureWidgetProvider"
+      android:exported="true"
+      android:label="@string/snote_quick_capture_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/snote_quick_capture_info" />
+    </receiver>
+
+    <!-- Swipeable note carousel. -->
+    <receiver
+      android:name=".NotesCarouselWidgetProvider"
+      android:exported="true"
+      android:label="@string/snote_carousel_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/snote_carousel_info" />
+    </receiver>
+
+    <service
+      android:name=".CarouselRemoteViewsService"
+      android:exported="false"
+      android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+    <service
+      android:name=".CaptureSyncService"
+      android:exported="false" />
+
+    <!-- Floating dialog over the launcher; separate task so the app UI never opens. -->
+    <activity
+      android:name=".QuickCaptureActivity"
+      android:exported="false"
+      android:excludeFromRecents="true"
+      android:launchMode="singleInstance"
+      android:taskAffinity="app.snote.capture"
+      android:theme="@style/SNoteCaptureDialog"
+      android:windowSoftInputMode="stateVisible|adjustResize" />
+
+    <activity
+      android:name=".CarouselConfigActivity"
+      android:exported="true"
+      android:excludeFromRecents="true"
+      android:taskAffinity="app.snote.widgetconfig"
+      android:theme="@style/SNoteCaptureDialog">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

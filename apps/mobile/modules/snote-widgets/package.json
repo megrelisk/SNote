@@ -1,0 +1,9 @@
+{
+  "name": "snote-widgets",
+  "version": "1.0.0",
+  "description": "Shared storage bridge between SNote and its home screen widgets (iOS App Group / Android App Widgets).",
+  "main": "index.ts",
+  "license": "MIT",
+  "author": "SNote",
+  "homepage": "https://github.com/megrelisk/SNote"
+}

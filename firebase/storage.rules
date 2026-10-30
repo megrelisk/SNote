@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// SNote attachments: snote/users/{uid}/attachments/{blockId}/{fileName}, owner-only, max 50 MB.
+// The project is shared with other apps: copy only the `match /snote/...` block into the
+// existing `match /b/{bucket}/o { ... }` block.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /snote/users/{uid}/attachments/{blockId}/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && (request.resource == null || request.resource.size < 50 * 1024 * 1024);
+    }
+  }
+}
