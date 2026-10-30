@@ -26,9 +26,13 @@ function useApkAvailable(): boolean | null {
   useEffect(() => {
     let cancelled = false;
     fetch(LATEST_RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((release: { assets?: { name: string }[] } | null) => {
-        if (!cancelled) setAvailable(!!release?.assets?.some((a) => a.name.endsWith('.apk')));
+      .then(async (res) => {
+        if (cancelled) return;
+        // 404 = nothing published yet. Other failures (e.g. API rate limits) keep the link visible.
+        if (res.status === 404) return setAvailable(false);
+        if (!res.ok) return setAvailable(true);
+        const release = (await res.json()) as { assets?: { name: string }[] };
+        if (!cancelled) setAvailable(!!release.assets?.some((a) => a.name.endsWith('.apk')));
       })
       // If GitHub can't be reached, keep showing the link rather than hiding a working download.
       .catch(() => !cancelled && setAvailable(true));

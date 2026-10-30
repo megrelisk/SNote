@@ -29,7 +29,7 @@ export function Sidebar({
   selection: Selection;
   onSelect: (s: Selection) => void;
 }) {
-  const { service, user, mode, status, signOut } = useSession();
+  const { service, user, mode, status, signOut, cloudAvailable, signInWithGoogle } = useSession();
   const theme = useTheme();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<string | null>(null);
@@ -206,6 +206,11 @@ export function Sidebar({
 
       <div className="sidebar-footer">
         <AppDownloadButton />
+        {mode === 'local' && cloudAvailable && (
+          <button className="primary small signin-sync" onClick={() => void signInWithGoogle()}>
+            Sign in with Google to sync
+          </button>
+        )}
         <div className={`sync-pill${!status.online ? ' offline' : status.pendingWrites ? ' pending' : ''}`} title={status.error ?? syncLabel}>
           <Icon name={!status.online ? 'cloudOff' : status.pendingWrites ? 'sync' : 'cloud'} size={14} />
           <span>{syncLabel}</span>

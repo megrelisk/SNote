@@ -12,8 +12,10 @@ import {
   FirestoreDocStore,
   MemoryDocStore,
   NotesService,
+  COLLECTIONS,
   type MemoryData,
   type SyncStatus,
+  type WriteOp,
   type UserProfile,
 } from '@snote/core';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -21,7 +23,19 @@ import { firebase, firebaseConfigured } from './firebase';
 import { flushPendingUploads } from './uploads';
 
 const LOCAL_KEY = 'snote.local.v1';
+const LOCAL_BACKUP_KEY = 'snote.local.v1.imported';
 const MODE_KEY = 'snote.mode';
+
+/** Notes written in local mode (this browser), if any are waiting to be moved to an account. */
+function readLocalData(): MemoryData | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    const data = raw ? (JSON.parse(raw) as MemoryData) : null;
+    return data && Object.keys(data.notes ?? {}).length > 0 ? data : null;
+  } catch {
+    return null;
+  }
+}
 
 export type SessionMode = 'cloud' | 'local';
 
@@ -35,6 +49,10 @@ interface SessionValue {
   signInWithGoogle(): Promise<void>;
   continueLocally(): void;
   signOut(): Promise<void>;
+  /** Number of notes saved in this browser's local mode that can be moved into the signed-in account. */
+  localNotesToImport: number;
+  importLocalNotes(): Promise<void>;
+  dismissLocalImport(): void;
   error: string | null;
 }
 
@@ -136,6 +154,32 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     });
   }, [service]);
 
+  // Local-mode notes waiting to be copied into the Google account after sign-in.
+  const [localNotesToImport, setLocalNotesToImport] = useState(0);
+  useEffect(() => {
+    const data = mode === 'cloud' ? readLocalData() : null;
+    setLocalNotesToImport(data ? Object.keys(data.notes).length : 0);
+  }, [mode]);
+
+  const importLocalNotes = useCallback(async () => {
+    const data = readLocalData();
+    if (!data || !service || mode !== 'cloud') return;
+    const ops: WriteOp[] = [];
+    for (const collection of COLLECTIONS) {
+      for (const [id, item] of Object.entries(data[collection] ?? {})) {
+        ops.push({ kind: 'set', collection, id, data: item as object });
+      }
+    }
+    // Applied to the local Firestore cache at once and uploaded in the background (also offline).
+    service.store.write(ops).catch((e) => setError(e instanceof Error ? e.message : String(e)));
+    // Keep a backup copy instead of deleting, and never offer the import twice.
+    localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(data));
+    localStorage.removeItem(LOCAL_KEY);
+    setLocalNotesToImport(0);
+  }, [service, mode]);
+
+  const dismissLocalImport = useCallback(() => setLocalNotesToImport(0), []);
+
   const signInWithGoogle = useCallback(async () => {
     const fb = firebase();
     if (!fb) return;
@@ -178,6 +222,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     continueLocally,
     signOut,
+    localNotesToImport,
+    importLocalNotes,
+    dismissLocalImport,
     error,
   };
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

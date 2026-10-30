@@ -14,7 +14,7 @@ type Pane = 'nav' | 'list' | 'main';
 
 /** Desktop: Drives & Folders → Notes list → Editor. Narrow screens show one pane at a time. */
 export function Workspace() {
-  const { error } = useSession();
+  const { error, localNotesToImport, importLocalNotes, dismissLocalImport } = useSession();
   const drives = useDrives();
   const folders = useFolders();
   const notes = useNotes();
@@ -124,6 +124,22 @@ export function Workspace() {
         {inDateMode && <button className="mobile-only back-link" onClick={() => setPane('list')}><Icon name="chevronLeft" size={14} /> Calendar</button>}
         {main}
       </main>
+      {localNotesToImport > 0 && (
+        <div className="toast import-banner" role="dialog" aria-label="Move local notes">
+          <p>
+            You have {localNotesToImport} note{localNotesToImport === 1 ? '' : 's'} saved in this browser. Move{' '}
+            {localNotesToImport === 1 ? 'it' : 'them'} to your account so {localNotesToImport === 1 ? 'it syncs' : 'they sync'} to all your devices?
+          </p>
+          <div className="import-actions">
+            <button className="ghost small" onClick={dismissLocalImport}>
+              Not now
+            </button>
+            <button className="primary small" onClick={() => void importLocalNotes()}>
+              Move to my account
+            </button>
+          </div>
+        </div>
+      )}
       {error && <div className="toast error">{error}</div>}
     </div>
   );

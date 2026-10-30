@@ -1635,3 +1635,26 @@ code {
   font-size: 15px;
   font-weight: 600;
 }
+
+.signin-sync {
+  justify-content: center;
+  margin: 0 4px;
+}
+
+.import-banner {
+  border-left: 3px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.import-banner p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
