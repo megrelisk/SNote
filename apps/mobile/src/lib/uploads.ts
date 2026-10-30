@@ -59,7 +59,7 @@ async function upload(localUri: string, storagePath: string, mimeType: string): 
 
 export async function uploadAttachment(file: PickedFile, blockId: string, uid: string): Promise<MediaRef> {
   const localUri = keepLocalCopy(file, blockId);
-  const storagePath = `users/${uid}/attachments/${blockId}/${safeName(file.name)}`;
+  const storagePath = `snote/users/${uid}/attachments/${blockId}/${safeName(file.name)}`;
   const base = { name: file.name, mimeType: file.mimeType, size: file.size, storagePath, localUri };
   const net = await NetInfo.fetch();
   if (net.isConnected !== false) {

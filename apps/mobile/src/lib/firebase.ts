@@ -6,7 +6,7 @@ import { FirestoreDocStore, NotesService, type FirestoreModularApi } from '@snot
  * React Native Firebase keeps a persistent on-device Firestore cache (enabled
  * by default), so reads work offline, writes are queued locally and pushed to
  * the cloud automatically when the connection returns. Data lives under
- * `users/{uid}` and is restored on any device after signing in again.
+ * `snote_users/{uid}` and is restored on any device after signing in again.
  */
 const api = firestoreModule as unknown as FirestoreModularApi;
 

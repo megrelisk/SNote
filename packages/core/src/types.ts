@@ -93,7 +93,7 @@ export interface CodeBlockData {
 export interface MediaRef {
   /** Remote download URL once uploaded; empty while the upload is pending. */
   url: string;
-  /** Storage path (`users/{uid}/attachments/...`). */
+  /** Storage path (`snote/users/{uid}/attachments/...`). */
   storagePath: string;
   name: string;
   mimeType: string;

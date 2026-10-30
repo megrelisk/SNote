@@ -70,7 +70,7 @@ export async function uploadAttachment(file: File, blockId: string, uid: string 
     const url = await readAsDataUrl(file);
     return { ...base, url, storagePath: '' };
   }
-  const path = `users/${uid}/attachments/${blockId}/${safeName(base.name)}`;
+  const path = `snote/users/${uid}/attachments/${blockId}/${safeName(base.name)}`;
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     await pendingUploads.put({ blockId, path, file, name: base.name, mimeType: base.mimeType });
     return { ...base, url: '', storagePath: path, localUri: URL.createObjectURL(file) };

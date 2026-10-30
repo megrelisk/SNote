@@ -28,12 +28,12 @@ Offline-first, real-time synced notes organised as **Drive → Folder → Note �
                                          WidgetKit extension / Android App Widgets
 ```
 
-* **Data model** (`packages/core/src/types.ts`). Each Drive, Folder, Note and Block is its own Firestore document under `users/{uid}/…`. Two devices editing different blocks of the same note never conflict. Every block stores `createdAt`, `updatedAt` and `activityDays`, the list of every local day it was created or edited on.
+* **Data model** (`packages/core/src/types.ts`). Each Drive, Folder, Note and Block is its own Firestore document under `snote_users/{uid}/…` (prefixed so the Firebase project can be shared with other apps). Two devices editing different blocks of the same note never conflict. Every block stores `createdAt`, `updatedAt` and `activityDays`, the list of every local day it was created or edited on.
 * **Offline-first sync.** Writes go to the local Firestore cache immediately: IndexedDB on the web, the native cache on mobile. The UI updates at once. The SDK queues writes while offline and pushes them when the connection returns. The sidebar and Settings show *Synced / Syncing… / Offline*.
 * **Data recovery.** Everything lives in the user's cloud account. Signing in with the same Google account on a new device or after reinstalling streams all data back. Starter Drives are created only after the server confirms the account is really empty, so a fresh install never duplicates data.
 * **Granular timestamps.** `formatTimestamp()` gives `YYYY-MM-DD HH:mm:ss`. Timestamps stay hidden until a block is hovered, focused or selected on the web, or tapped on mobile.
 * **Date filter.** A single `array-contains` query on `activityDays` finds every block created *or edited* on a day, including blocks edited again later. `filterByDate()` then groups the results Drive → Folder → Note and applies the *created / edited / either* option and the global, drive or folder scope.
-* **Attachments.** Files go to Firebase Storage at `users/{uid}/attachments/{blockId}/…`. If an upload fails or the device is offline, the file is queued: IndexedDB on the web, the app's document directory on mobile. It's retried on reconnect, and the block is then patched with the download URL.
+* **Attachments.** Files go to Firebase Storage at `snote/users/{uid}/attachments/{blockId}/…`. If an upload fails or the device is offline, the file is queued: IndexedDB on the web, the app's document directory on mobile. It's retried on reconnect, and the block is then patched with the download URL.
 
 ## Feature checklist (acceptance criteria)
 
@@ -44,7 +44,7 @@ Offline-first, real-time synced notes organised as **Drive → Folder → Note �
 | Widget: swipeable note previews, tap to open note | Android `NotesCarouselWidgetProvider` (StackView) · iOS `CarouselWidget.swift` |
 | Widget configuration (pin Drive / Folder / pinned / recent) | Android `CarouselConfigActivity` · iOS `CarouselConfigurationIntent` |
 | Full offline mode + auto-sync | Firestore persistent caches + `FirestoreDocStore` status · upload queues |
-| 100% restoration on reinstall | all data in `users/{uid}` (rules in `firebase/firestore.rules`) |
+| 100% restoration on reinstall | all data in `snote_users/{uid}` (rules in `firebase/firestore.rules`) |
 | Tap a block → timestamp to the second | web `BlockRow.tsx` · mobile `BlockItem.tsx` |
 | Date filter shows only blocks/notes touched that day | `packages/core/src/dateFilter.ts` · web `DateFilter.tsx` · mobile `(tabs)/calendar.tsx` |
 | Block editor: H1–H3, bold/italic/underline/strike/code, lists, to-dos with strike-through, code blocks, images, files with previews, dynamic tables | web `src/components/blocks/*` · mobile `src/components/editor/*` |

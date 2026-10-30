@@ -37,9 +37,12 @@ export interface FirestoreModularApi {
   };
 }
 
-/** Firestore layout: every user's data lives under `users/{uid}`. */
+/**
+ * Firestore layout: every user's data lives under `snote_users/{uid}`. The prefix keeps SNote
+ * separate from other apps sharing the same Firebase project.
+ */
 export function userCollectionPath(uid: string, collection: CollectionName): string {
-  return `users/${uid}/${collection}`;
+  return `snote_users/${uid}/${collection}`;
 }
 
 export class FirestoreDocStore implements DocStore {

@@ -38,8 +38,8 @@ describe('FirestoreDocStore', () => {
       { kind: 'delete', collection: 'blocks', id: 'b1' },
     ]);
     expect(writes).toEqual([
-      { op: 'set', path: 'users/u1/notes/n1', data: { title: 'x' }, merge: true },
-      { op: 'delete', path: 'users/u1/blocks/b1' },
+      { op: 'set', path: 'snote_users/u1/notes/n1', data: { title: 'x' }, merge: true },
+      { op: 'delete', path: 'snote_users/u1/blocks/b1' },
     ]);
 
     const onData = vi.fn();
