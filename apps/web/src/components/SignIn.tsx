@@ -23,14 +23,20 @@ export function SignIn() {
             Continue with Google
           </button>
         ) : (
-          <p className="hint">
-            Cloud sync is not configured for this deployment. Add your Firebase keys to <code>apps/web/.env.local</code> to enable Google sign-in.
-          </p>
+          <button className="primary signin-start" onClick={continueLocally}>
+            Start writing
+          </button>
         )}
-        <button className="ghost" onClick={continueLocally}>
-          Continue without an account
-        </button>
-        <p className="hint small">Without an account, notes stay in this browser only.</p>
+        {cloudAvailable && (
+          <button className="ghost" onClick={continueLocally}>
+            Continue without an account
+          </button>
+        )}
+        <p className="hint small">
+          {cloudAvailable
+            ? 'Without an account, notes stay in this browser only.'
+            : 'Notes are saved in this browser. Google sign-in and live sync between your devices are coming soon.'}
+        </p>
         {error && <p className="error-text">{error}</p>}
         <AppDownload />
       </div>

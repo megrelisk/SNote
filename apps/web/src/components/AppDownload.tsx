@@ -18,9 +18,42 @@ function useQrSvg(text: string) {
   return svg;
 }
 
+const LATEST_RELEASE_API = process.env.NEXT_PUBLIC_ANDROID_RELEASE_API || 'https://api.github.com/repos/megrelisk/SNote/releases/latest';
+
+/** Whether an APK has been published yet (null while checking). */
+function useApkAvailable(): boolean | null {
+  const [available, setAvailable] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(LATEST_RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((release: { assets?: { name: string }[] } | null) => {
+        if (!cancelled) setAvailable(!!release?.assets?.some((a) => a.name.endsWith('.apk')));
+      })
+      // If GitHub can't be reached, keep showing the link rather than hiding a working download.
+      .catch(() => !cancelled && setAvailable(true));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return available;
+}
+
 /** "Get the Android app": a direct download button plus a QR code to scan from the phone. */
 export function AppDownload({ compact = false }: { compact?: boolean }) {
   const svg = useQrSvg(ANDROID_APK_URL);
+  const available = useApkAvailable();
+  if (available === null) return null;
+  if (!available) {
+    return (
+      <div className={`app-download${compact ? ' compact' : ''}`}>
+        <div className="app-download-text">
+          <strong>SNote for Android</strong>
+          <span>The Android app is on its way. A download link and QR code will appear here as soon as it is ready.</span>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={`app-download${compact ? ' compact' : ''}`}>
       {svg && <div className="qr" role="img" aria-label="QR code to download the Android app" dangerouslySetInnerHTML={{ __html: svg }} />}
